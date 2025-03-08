@@ -31,30 +31,7 @@ const float NTSC_4FSC = 4 * NTSC_FSC;
 
 ntsc_config config ;
 
-
-/* // Multiply two 3x3 matrices, storing result back in A
-void matrixMultiply3x3(Matrix3x3& A, const Matrix3x3& B) {
-    // Create a temporary array to store the result
-    float temp[9] = {0}; // Initialize to zero
-    
-    // Matrix multiplication: temp = B * A
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            for (int k = 0; k < 3; k++) {
-                // Match the OEMatrix3 implementation
-                temp[i * 3 + j] += B[i * 3 + k] * A[k * 3 + j];
-            }
-        }
-    }
-    
-    // Copy the result back to A
-    for (int i = 0; i < 9; i++) {
-        A[i] = temp[i];
-    }
-    A.print();
-} */
-
-// Function to generate phase information for a scanline
+// Function to generate phase information for a scanline and stuff in config.
 void generatePhaseInfo(int scanlineY, float colorBurst) {
     //ph_info phaseInfo;
     
@@ -65,8 +42,7 @@ void generatePhaseInfo(int scanlineY, float colorBurst) {
     // Set phase alternation (in original code this is a boolean array, 
     // but we simplify to alternate based on scanline)
     config.phaseInfo[1] = 0.0f; //(scanlineY % 2) ? 1.0f : -0.0f;
-    
-    //return phaseInfo;
+
 }
 
 // The core pixel function - convert an input luminance to YIQ-like representation
@@ -176,8 +152,7 @@ void processAppleIIScanline(
     
     // First pass: Convert input to YIQ representation
     for (int x = 0; x < config.width; x++) {
-        // Calculate phase for this pixel
-        // used to do x * width / width. That was silly.
+        // Calculate phase for this pixel. Should use addition instead of all these multiplies.
         float phase = 2.0f * M_PI * (config.subcarrier * x + config.phaseInfo[0]);
         //printf("scanlineY: %d, x: %d, phase: %.6f\n", scanlineY, x, phase);
         // Process pixel to YIQ
@@ -225,11 +200,6 @@ void processAppleIIFrame(
             0, 1, 0,
             0, 0, 1);
         
-        /* Matrix3x3 yiqMatrix( // TODO: these matrices are transposed row/col wise compared to "normal" matrix order. 
-            1, 1, 1,
-            0, -0.394642F, 2.032062F,
-            1.139883F, -0.580622F, 0
-        ); */
         Matrix3x3 yiqMatrix(
             1, 0,        1.13983,
             1, -0.39465, -0.58060,
@@ -252,9 +222,6 @@ void processAppleIIFrame(
             0, sinf(videoHue), cosf(videoHue)
         );
     
-        //matrixMultiply3x3(decoderMatrix, saturationMatrix);
-        //matrixMultiply3x3(decoderMatrix, hueMatrix);
-        //matrixMultiply3x3(decoderMatrix, yiqMatrix);
         decoderMatrix.multiply(saturationMatrix);
         decoderMatrix.multiply(hueMatrix);
         decoderMatrix.multiply(yiqMatrix);
@@ -262,32 +229,10 @@ void processAppleIIFrame(
         config.decoderMatrix = decoderMatrix;
 #endif
 
-    //std::vector<uint8_t> inputScanline(config.width);
-    //std::vector<RGBA> outputScanline(config.width);
-        
     // Process each scanline
     for (int y = 0; y < config.height; y++) {
-
-        // Extract scanline from frame data
-        /* for (int x = 0; x < config.width; x++) {
-            inputScanline[x] = frameData[y * config.width + x];
-        } */
-        
         // Process the scanline
-        /*  processAppleIIScanline(
-            inputScanline, outputScanline, y, config.colorBurst, config.subcarrier,
-            config.filterCoefficients, decoderMatrix, config.decoderOffset
-        );  */
-/*         processAppleIIScanline(
-            inputScanline, outputImage + (y * config.width), y, config.colorBurst, config.subcarrier,
-            config.filterCoefficients, config.decoderMatrix, config.decoderOffset
-        );
- */        processAppleIIScanline(frameData + (y * config.width), outputImage + (y * config.width), y );
-
-        // Copy results to output image
-        /* for (int x = 0; x < config.width; x++) {
-            outputImage[y * config.width + x] = outputScanline[x];
-        } */
+         processAppleIIScanline(frameData + (y * config.width), outputImage + (y * config.width), y );
     }
 }
 
@@ -340,9 +285,6 @@ int main(int argc, char **argv) {
     generatePhaseInfo(/* scanlineY */ 0, colorBurst);
     RGBA *outputImage = new RGBA[config.width * config.height];
 
-/*     std::vector<RGBA> outputImage(frameData.size());
-    outputImage.resize(config.width * config.height);
- */
     // read nanosecond time
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -351,7 +293,6 @@ int main(int argc, char **argv) {
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     printf("Execution time: %lld nanoseconds\n", duration);
-
 
     // Write the output image to a PPM file
     writePPMFile("output.ppm", outputImage, config.width, config.height);
