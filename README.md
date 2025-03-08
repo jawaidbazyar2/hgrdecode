@@ -32,3 +32,12 @@ With optimization disable (remove -O3 from the Makefile), the PPM decode (not co
 
 - Add CLI configuration options various NTSC decoding parameters.
 - Drill down and implement optimizations. The ultimate goal is for this code base to be able to operate as part of an emulator pipeline - 60fps is 17ms per frame, so we need another 2-3x increase in performance for this code to work in that scenario. It may also be possible to use SIMD instructions to speed up the color decoding process. That will be a work in progress.
+
+## Acknowledgements
+
+This is an implementation in pure C++of the NTSC decoding pipeline using OpenGL shaders from OpenEmulator. 
+
+[OpenEmulator](https://github.com/openemulator/openemulator)
+
+
+
