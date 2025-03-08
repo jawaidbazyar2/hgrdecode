@@ -161,9 +161,11 @@ void processAppleIIScanline(
     }
     
     // Display YIQ buffer values for the first few pixels if this is the first scanline
-    if (0 && scanlineY == 0) {
+#if 0
+    if (scanlineY == 0) {
         displayYIQBuffer(yiqBuffer, config.width, 0, 10);  // Show first 10 pixels
     }
+#endif
     
     // Second pass: Apply FIR filter to each pixel
     std::vector<float> filteredYiq(3);  // Temporary storage for filtered YIQ
