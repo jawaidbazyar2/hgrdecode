@@ -1,3 +1,4 @@
+#pragma once
 
 // Define a 3x3 matrix type
 struct Matrix3x3 {

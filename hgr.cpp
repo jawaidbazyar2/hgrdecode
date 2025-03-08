@@ -87,8 +87,8 @@ std::vector<uint8_t> generateHiresData(const std::vector<uint8_t>& hiresBytes) {
  * @param outputOffset Offset in the output vector to store the data
  * @return The number of bytes written to the output
  */
-size_t generateHiresScanline(const std::vector<uint8_t>& hiresData, int startOffset, 
-                           std::vector<uint8_t>& output, size_t outputOffset) {
+size_t generateHiresScanline(uint8_t *hiresData, int startOffset, 
+                           uint8_t *output, size_t outputOffset) {
     int lastByte = 0x00;
     size_t index = outputOffset;
     
@@ -115,11 +115,11 @@ size_t generateHiresScanline(const std::vector<uint8_t>& hiresData, int startOff
  * @return std::vector<uint8_t> The processed image as bit signal data
  */
 /** TODO: there is some hack we need to do where a pixel value carries over from the end of a previous scanline somehow. */
-std::vector<uint8_t> hiresToGray(const std::vector<uint8_t>& hiresData) {
+uint8_t *hiresToGray(uint8_t *hiresData) {
     // Calculate output size and pre-allocate
     const int pixelsPerScanline = 40 * CELL_WIDTH;
     const size_t totalPixels = 192 * pixelsPerScanline;
-    std::vector<uint8_t> bitSignalOut(totalPixels);
+    uint8_t *bitSignalOut = new uint8_t[totalPixels];
     
     // Process each scanline (0-191)
     for (int y = 0; y < 192; y++) {
@@ -136,6 +136,6 @@ std::vector<uint8_t> hiresToGray(const std::vector<uint8_t>& hiresData) {
         }
     }
     
-    printf("Processed entire image: %zu pixels\n", bitSignalOut.size());
+    printf("Processed entire image: %zu pixels\n", totalPixels);
     return bitSignalOut;
 }

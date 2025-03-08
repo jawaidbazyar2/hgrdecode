@@ -76,10 +76,11 @@ uint8_t *readImageFromPGMFile(const char* filename) {
  * @param filename The output filename (should end with .ppm)
  * @return bool True if the file was written successfully, false otherwise
  */
-bool writeImageToPPM(const std::vector<uint8_t>& bitSignalOut, const char* filename) {
+bool writeImageToPPM(uint8_t *bitSignalOut, const char* filename) {
     const int width = 560;  // 40 bytes * 14 pixels per byte
     const int height = 192; // 192 scanlines
-    
+    const int size = width * height;
+
     // Open the file for writing
     FILE* file = fopen(filename, "wb");
     if (!file) {
@@ -101,7 +102,7 @@ bool writeImageToPPM(const std::vector<uint8_t>& bitSignalOut, const char* filen
             int index = y * pixelsPerScanline + x;
             
             // Get the pixel value (0x00 or 0xFF)
-            uint8_t pixelValue = (index < bitSignalOut.size()) ? bitSignalOut[index] : 0x00;
+            uint8_t pixelValue = (index < size) ? bitSignalOut[index] : 0x00;
             
             // Write RGB values (white or black)
             uint8_t rgb[3] = {pixelValue, pixelValue, pixelValue};
@@ -121,10 +122,11 @@ bool writeImageToPPM(const std::vector<uint8_t>& bitSignalOut, const char* filen
  * @param filename The output filename (should end with .pbm)
  * @return bool True if the file was written successfully, false otherwise
  */
-bool writeImageToPBM(const std::vector<uint8_t>& bitSignalOut, const char* filename) {
+bool writeImageToPBM(uint8_t *bitSignalOut, const char* filename) {
     const int width = 560;  // 40 bytes * 14 pixels per byte
     const int height = 192; // 192 scanlines
-    
+    const int size = width * height;
+
     // Open the file for writing
     FILE* file = fopen(filename, "wb");
     if (!file) {
@@ -153,7 +155,7 @@ bool writeImageToPBM(const std::vector<uint8_t>& bitSignalOut, const char* filen
             
             // Get the pixel value (0x00 or 0xFF)
             // In PBM, 0 is white and 1 is black, so we need to invert our values
-            bool isBlack = (index < bitSignalOut.size()) ? (bitSignalOut[index] == 0x00) : true;
+            bool isBlack = (index < size) ? (bitSignalOut[index] == 0x00) : true;
             
             if (isBlack) {
                 // Set the corresponding bit in the row buffer
@@ -180,10 +182,11 @@ bool writeImageToPBM(const std::vector<uint8_t>& bitSignalOut, const char* filen
  * @param filename The output filename (should end with .pgm)
  * @return bool True if the file was written successfully, false otherwise
  */
-bool writeImageToPGM(const std::vector<uint8_t>& bitSignalOut, const char* filename) {
+bool writeImageToPGM(uint8_t *bitSignalOut, const char* filename) {
     const int width = 560;  // 40 bytes * 14 pixels per byte
     const int height = 192; // 192 scanlines
-    
+    const int size = width * height;
+
     // Open the file for writing
     FILE* file = fopen(filename, "wb");
     if (!file) {
@@ -205,7 +208,7 @@ bool writeImageToPGM(const std::vector<uint8_t>& bitSignalOut, const char* filen
             int index = y * pixelsPerScanline + x;
             
             // Get the pixel value (0x00 or 0xFF)
-            uint8_t pixelValue = (index < bitSignalOut.size()) ? bitSignalOut[index] : 0x00;
+            uint8_t pixelValue = (index < size) ? bitSignalOut[index] : 0x00;
             
             // Write grayscale value (single byte per pixel)
             fwrite(&pixelValue, 1, 1, file);

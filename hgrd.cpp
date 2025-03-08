@@ -9,6 +9,7 @@
 #include "ppm.hpp"
 #include "font.hpp"
 #include "util.hpp"
+#include "ntsc.hpp"
 
 int main(int argc, char **argv)
 {
@@ -54,12 +55,11 @@ int main(int argc, char **argv)
     const char *filename = argv[optind];
 
     try {
-        std::vector<uint8_t> hiresData = readHiresFile(filename);
-        printf("Successfully loaded hi-res image: %s (%zu bytes)\n", 
-                filename, hiresData.size());
+        uint8_t *hiresData = readHiresFile(filename);
+        printf("Successfully loaded hi-res image: %s\n", filename);
         
         // Process the image
-        std::vector<uint8_t> graymap = hiresToGray(hiresData);
+        uint8_t *graymap = hiresToGray(hiresData);
 
         if (mode == MODE_PGM) {
             // Generate output filenames by replacing or adding extensions
@@ -69,12 +69,25 @@ int main(int argc, char **argv)
             writeImageToPGM(graymap, pgmFilename);            
         } else if (mode == MODE_PPM) {
 
-            
+            uint8_t *graymap = hiresToGray(hiresData);
+
+            setupConfig();
+            RGBA *outputImage = new RGBA[config.width * config.height];
+
+            // read nanosecond time
+            auto start = std::chrono::high_resolution_clock::now();
+
+            processAppleIIFrame(graymap, outputImage);
+
+            auto end = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+            printf("Execution time: %lld nanoseconds\n", duration);
+
             // Generate output filenames by replacing or adding extensions
             char *ppmFilename = rewriteExtension(filename, ".ppm");
             
             // Write to image files
-            writeImageToPPM(graymap, ppmFilename);
+            writePPMFile(ppmFilename, outputImage, 560, 192 );
         }
 
         
