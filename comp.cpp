@@ -23,7 +23,7 @@ struct ntsc_config {
 
 #define FRAME_WIDTH 560
 #define FRAME_HEIGHT 192
-#define NUM_TAPS 5
+#define NUM_TAPS 8
 
 // Constants
 const float NTSC_FSC = 3.579545e6; // NTSC colorburst frequency
@@ -86,7 +86,7 @@ inline void processPixel(uint8_t input, float phase, float phaseAlternation, flo
 }
 
 // Apply FIR filter to YIQ components - completely revised implementation
-void applyFilter(const std::vector<std::vector<float>>& coefficients, 
+inline void applyFilter(//const std::vector<std::vector<float>>& coefficients, 
                 const std::vector<float>& yiqBuffer,
                 int x, int width,
                 float* output) {
@@ -95,9 +95,9 @@ void applyFilter(const std::vector<std::vector<float>>& coefficients,
     
     // Apply center tap (c0)
     const float* center = &yiqBuffer[x * 3];
-    output[0] += center[0] * coefficients[0][0];  // Y
-    output[1] += center[1] * coefficients[0][1];  // I
-    output[2] += center[2] * coefficients[0][2];  // Q
+    output[0] += center[0] * config.filterCoefficients[0][0];  // Y
+    output[1] += center[1] * config.filterCoefficients[0][1];  // I
+    output[2] += center[2] * config.filterCoefficients[0][2];  // Q
     
     // Apply symmetric taps (c1 through c8)
     for (int i = 1; i <= NUM_TAPS; i++) {
@@ -108,17 +108,17 @@ void applyFilter(const std::vector<std::vector<float>>& coefficients,
         // Apply left neighbor if in bounds
         if (leftIdx >= 0) {
             const float* left = &yiqBuffer[leftIdx * 3];
-            output[0] += left[0] * coefficients[i][0];  // Y
-            output[1] += left[1] * coefficients[i][1];  // I
-            output[2] += left[2] * coefficients[i][2];  // Q
+            output[0] += left[0] * config.filterCoefficients[i][0];  // Y
+            output[1] += left[1] * config.filterCoefficients[i][1];  // I
+            output[2] += left[2] * config.filterCoefficients[i][2];  // Q
         }
         
         // Apply right neighbor if in bounds
         if (rightIdx < width) {
             const float* right = &yiqBuffer[rightIdx * 3];
-            output[0] += right[0] * coefficients[i][0];  // Y
-            output[1] += right[1] * coefficients[i][1];  // I
-            output[2] += right[2] * coefficients[i][2];  // Q
+            output[0] += right[0] * config.filterCoefficients[i][0];  // Y
+            output[1] += right[1] * config.filterCoefficients[i][1];  // I
+            output[2] += right[2] * config.filterCoefficients[i][2];  // Q
         }
     }
 }
@@ -126,13 +126,13 @@ void applyFilter(const std::vector<std::vector<float>>& coefficients,
 // TODO: see if this is correct and is the source of the transposed row/col wise matrices issue.
 // it's a different implementation than above. 
 // Function to convert YIQ to RGB using a decoding matrix
-inline void yiqToRgb(const float yiq[3], const Matrix3x3& matrix, const float offset[3], RGBA &rgba) {
+inline void yiqToRgb(const float yiq[3], /* const Matrix3x3& matrix,  */ /* const float offset[3], */ RGBA &rgba) {
     float rgb[3];
     
     // Apply matrix and offset (matrix is 3x3, stored in row-major format)
-    rgb[0] = matrix[0] * yiq[0] + matrix[1] * yiq[1] + matrix[2] * yiq[2] /* + offset[0] */;
-    rgb[1] = matrix[3] * yiq[0] + matrix[4] * yiq[1] + matrix[5] * yiq[2] /* + offset[1] */;
-    rgb[2] = matrix[6] * yiq[0] + matrix[7] * yiq[1] + matrix[8] * yiq[2] /* + offset[2] */;
+    rgb[0] = config.decoderMatrix[0] * yiq[0] + config.decoderMatrix[1] * yiq[1] + config.decoderMatrix[2] * yiq[2] /* + offset[0] */;
+    rgb[1] = config.decoderMatrix[3] * yiq[0] + config.decoderMatrix[4] * yiq[1] + config.decoderMatrix[5] * yiq[2] /* + offset[1] */;
+    rgb[2] = config.decoderMatrix[6] * yiq[0] + config.decoderMatrix[7] * yiq[1] + config.decoderMatrix[8] * yiq[2] /* + offset[2] */;
     
     // Clamp values and convert to 8-bit
     rgba.r = std::clamp(static_cast<int>(rgb[0] * 255), 0, 255);
@@ -166,28 +166,19 @@ void processAppleIIScanline(
     uint8_t *inputScanline,  // Input 560 bytes of luminance data
     RGBA *outputScanline,         // Output 560 RGBA pixels
     int scanlineY                             // Current scanline index
-    //ntsc_config &config,
-    /* float colorBurst,                          // Colorburst phase value
-    float subcarrier,                          // Subcarrier frequency (normalized)
-    const std::vector<std::vector<float>>& filterCoefficients, // FIR filter coefficients (9 sets of 3 values)
-    const Matrix3x3& decoderMatrix,              // YIQ to RGB conversion matrix
-    const float decoderOffset[3]               // YIQ to RGB offset */
 ) {
-    // Ensure output size matches input
-    //outputScanline.resize(inputScanline.size());
-    
-    // Generate phase information for this scanline
+
+    // Generate phase information for this scanline - should tweak for every other scanline
     //std::vector<float> phaseInfo = generatePhaseInfo(scanlineY, config.colorBurst);
     
     // Create temporary buffer for YIQ components
-    //const int width = inputScanline.size();
     std::vector<float> yiqBuffer(config.width * 3);  // 3 components per pixel (Y, I, Q)
     
     // First pass: Convert input to YIQ representation
     for (int x = 0; x < config.width; x++) {
         // Calculate phase for this pixel
-        /* float normalizedX = (float)x / (float)width; */
-        float phase = 2.0f * M_PI * (config.subcarrier *  /* width * normalizedX */ x + config.phaseInfo[0]);
+        // used to do x * width / width. That was silly.
+        float phase = 2.0f * M_PI * (config.subcarrier * x + config.phaseInfo[0]);
         //printf("scanlineY: %d, x: %d, phase: %.6f\n", scanlineY, x, phase);
         // Process pixel to YIQ
         float* yiq = &yiqBuffer[x * 3];
@@ -195,7 +186,7 @@ void processAppleIIScanline(
     }
     
     // Display YIQ buffer values for the first few pixels if this is the first scanline
-    if (scanlineY == 0) {
+    if (0 && scanlineY == 0) {
         displayYIQBuffer(yiqBuffer, config.width, 0, 10);  // Show first 10 pixels
     }
     
@@ -204,10 +195,10 @@ void processAppleIIScanline(
     
     for (int x = 0; x < config.width; x++) {
         // Apply filter using the whole buffer
-        applyFilter(config.filterCoefficients, yiqBuffer, x, config.width, filteredYiq.data());
+        applyFilter(/* config.filterCoefficients, */ yiqBuffer, x, config.width, filteredYiq.data());
         
         // Convert to RGB
-        yiqToRgb(filteredYiq.data(), config.decoderMatrix, config.decoderOffset, outputScanline[x]);
+        yiqToRgb(filteredYiq.data(), /* config.decoderMatrix, */ /* config.decoderOffset, */ outputScanline[x]);
     }
 }
 

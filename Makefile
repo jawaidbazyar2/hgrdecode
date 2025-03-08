@@ -10,7 +10,7 @@ ch: ch.cpp
 all: hgrd comp phase ch iir
 
 comp: comp.cpp ppm.cpp Matrix3x3.cpp
-	clang++ -std=c++17 -fsanitize=address  -o comp comp.cpp ppm.cpp Matrix3x3.cpp
+	clang++ -O3 -std=c++17 -fsanitize=address  -o comp comp.cpp ppm.cpp Matrix3x3.cpp
 
 phase: phase.cpp
 	clang++ -std=c++17 -fsanitize=address  -o phase phase.cpp
