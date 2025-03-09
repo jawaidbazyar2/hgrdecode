@@ -1,7 +1,10 @@
 #include "types.hpp"
 #include <vector>
 #include <cstdio>
+#include <cstring>
 #include <stdexcept>
+#include <cstring>
+
 #include "hgr.hpp"
 
 /**

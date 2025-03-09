@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <chrono>
-
+#include <stdio.h>
 #include "Matrix3x3.hpp"
 #include "ppm.hpp"
 #include "types.hpp"

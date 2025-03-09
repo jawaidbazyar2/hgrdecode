@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <algorithm>
 #include <getopt.h>
+#include <cstring>
+#include <chrono>
 #include "types.hpp"
 #include "hgr.hpp"
 #include "ppm.hpp"

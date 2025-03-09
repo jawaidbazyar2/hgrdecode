@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <cstdint>
 #include <algorithm>
+#include <cstring>
 #include "types.hpp"
 #include "hgr.hpp"
 
