@@ -39,6 +39,38 @@ uint8_t *readHiresFile(const char* filename) {
     return imageData;
 }
 
+/**
+ * @brief Loads an Apple II lo-res image file into a vector
+ * 
+ * @param filename Path to the Apple II hi-res image file
+ * @return std::vector<uint8_t> Vector containing the 8,192 bytes of image data
+ * @throws std::runtime_error if file cannot be opened or read
+ */
+uint8_t *readLoresFile(const char* filename) {
+    // Apple II lo-res images are exactly 1024 bytes
+    const size_t LORES_SIZE = 1024;
+    
+    // Pre-allocate the vector to the exact size
+    uint8_t *imageData = new uint8_t[LORES_SIZE];
+    
+    // Open the file in binary mode
+    FILE* file = fopen(filename, "rb");
+    if (!file) {
+        throw std::runtime_error("Could not open file");
+    }
+    
+    // Read the entire file into the vector
+    size_t bytesRead = fread(imageData, 1, LORES_SIZE, file);
+    fclose(file);
+    
+    // Verify we read the correct amount
+    if (bytesRead != LORES_SIZE) {
+        throw std::runtime_error("File size incorrect - expected 1024 bytes");
+    }
+    
+    return imageData;
+}
+
 char *rewriteExtension(const char *filename, const char *newExtension) {
     const char* inputExt = strrchr(filename, '.');
     size_t baseLen = inputExt - filename;

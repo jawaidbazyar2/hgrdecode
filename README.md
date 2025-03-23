@@ -14,15 +14,27 @@ There is nothing platform-specific at all in the code, so it should build and op
 
 ## Usage
 
-```bash
-./hgrd --hgrtoppm <input_file>
 ```
+% ./hgrd [--hgr | --lgr] [--ppm | --pgm] <input_file> <output_file>
+```
+
+There are four command-line options:
+   * --hgr - input file is hi-res
+   * --lgr - input file is lo-res
+   * --ppm - output a ppm (color) image
+   * --pgm - output a pgm (gray map) image.
+
+## Examples
+
+```bash
+./hgrd --hgr --ppm <input_file> <output_file>
+``` 
 Create a PPM (color) image from a hi-res image. This uses a simulation of the Apple II bit-stream output and an NTSC decoder to display an Apple II hi-res image the way it would have looked on an old composite video monitor.
 
 ```bash
-./hgrd --hgrtopgm <input_file>
+./hgrd --lgr --pgm <input_file> <output_file>
 ```
-Create a PGM (gray map) image from a hi-res image. This is essentially a bare (no color decoding) image of a hi-res file. 560 dots wide by 192 dots high. This is one stage of the input to the color decoding process, put here in case you want to create "monochrome" output.
+Create a PGM (gray map) image from a lo-res image. This is essentially a bare (no color decoding) image of a lo-res file. 560 dots wide by 192 dots high. This is one stage of the input to the color decoding process, put here in case you want to create "monochrome" output.
 
 ## Performance
 

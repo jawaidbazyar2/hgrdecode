@@ -1,5 +1,5 @@
-hgrd: hgrd.cpp ppm.cpp font.cpp util.cpp hgr.cpp hgr.hpp ntsc.cpp Matrix3x3.cpp
-	clang++ -std=c++17 -fsanitize=address  -o hgrd hgrd.cpp ppm.cpp font.cpp util.cpp hgr.cpp ntsc.cpp Matrix3x3.cpp
+hgrd: hgrd.cpp ppm.cpp font.cpp util.cpp hgr.cpp hgr.hpp ntsc.cpp Matrix3x3.cpp lgr.cpp
+	clang++ -std=c++17 -O3 -o hgrd hgrd.cpp ppm.cpp font.cpp util.cpp hgr.cpp ntsc.cpp lgr.cpp Matrix3x3.cpp
 
 ch: ch.cpp
 	clang++ -std=c++17 -fsanitize=address  -o ch ch.cpp

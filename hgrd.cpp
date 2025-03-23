@@ -8,6 +8,7 @@
 #include <chrono>
 #include "types.hpp"
 #include "hgr.hpp"
+#include "lgr.hpp"
 #include "ppm.hpp"
 #include "font.hpp"
 #include "util.hpp"
@@ -18,34 +19,51 @@ int main(int argc, char **argv)
     buildHires40Font(MODEL_IIE, 0);
     //if (DEBUG) displayHires40Font();
     int opt;
-    enum Mode {
-        MODE_NONE,
-        MODE_PPM,
-        MODE_PGM
-    } mode = MODE_NONE;
+    enum Input_Mode {
+        IN_NONE,
+        IN_HGR,
+        IN_LGR
+    } input_mode = IN_NONE;
+    enum Output_Mode {
+        OUT_NONE,
+        OUT_PPM,
+        OUT_PGM
+    } output_mode = OUT_NONE;
 
     static struct option long_options[] = {
-        {"hgrtoppm", no_argument, 0, 'p'},
-        {"hgrtopgm", no_argument, 0, 'g'},
+        {"hgr", no_argument, 0, 'h'},
+        {"lgr", no_argument, 0, 'l'},
+        {"ppm", no_argument, 0, 'p'},
+        {"pgm", no_argument, 0, 'g'},
         {0, 0, 0, 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "pg", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "hlpg", long_options, NULL)) != -1) {
         switch (opt) {
             case 'p':
-                mode = MODE_PPM;
+                output_mode = OUT_PPM;
                 break;
             case 'g': 
-                mode = MODE_PGM;
+                output_mode = OUT_PGM;
+                break;
+            case 'l':
+                input_mode = IN_LGR;
+                break;
+            case 'h':
+                input_mode = IN_HGR;
                 break;
             default:
-                fprintf(stderr, "Usage: %s [--hgrtoppm | --hgrtopgm] <input_file>\n", argv[0]);
+                fprintf(stderr, "Usage: %s [--hgr | --lgr | --ppm | --pgm] <input_file>\n", argv[0]);
                 exit(1);
         }
     }
 
-    if (mode == MODE_NONE) {
-        fprintf(stderr, "Must specify either --hgrtoppm or --hgrtopgm\n");
+    if (input_mode == IN_NONE) {
+        fprintf(stderr, "Must specify either --hgr or --lgr\n");
+        exit(1);
+    }
+    if (output_mode == OUT_NONE) {
+        fprintf(stderr, "Must specify either --ppm or --pgm\n");
         exit(1);
     }
 
@@ -57,21 +75,30 @@ int main(int argc, char **argv)
     const char *filename = argv[optind];
 
     try {
-        uint8_t *hiresData = readHiresFile(filename);
-        printf("Successfully loaded hi-res image: %s\n", filename);
-        
-        // Process the image
-        uint8_t *graymap = hiresToGray(hiresData);
+        uint8_t *graymap = nullptr;
 
-        if (mode == MODE_PGM) {
+        if (input_mode == IN_LGR) { 
+            uint8_t *hiresData = readLoresFile(filename);
+            printf("Successfully loaded lo-res image: %s\n", filename);
+            
+            // Process the image
+            graymap = loresToGray(hiresData);
+        } else if (input_mode == IN_HGR) {
+
+            uint8_t *hiresData = readHiresFile(filename);
+            printf("Successfully loaded hi-res image: %s\n", filename);
+            
+            // Process the image
+            graymap = hiresToGray(hiresData);
+        }
+
+        if (output_mode == OUT_PGM) {   
             // Generate output filenames by replacing or adding extensions
             char *pgmFilename = rewriteExtension(filename, ".pgm");
             
             // Write to image files
             writeImageToPGM(graymap, pgmFilename);            
-        } else if (mode == MODE_PPM) {
-
-            uint8_t *graymap = hiresToGray(hiresData);
+        } else if (output_mode == OUT_PPM) {
 
             setupConfig();
             RGBA *outputImage = new RGBA[config.width * config.height];
@@ -91,7 +118,6 @@ int main(int argc, char **argv)
             // Write to image files
             writePPMFile(ppmFilename, outputImage, 560, 192 );
         }
-
         
     } catch (const std::exception& e) {
         printf("Error processing image: %s\n", e.what());
