@@ -24,6 +24,7 @@
 #include <cstring>
 #include <chrono>
 #include "types.hpp"
+#include "dhgr.hpp"
 #include "hgr.hpp"
 #include "lgr.hpp"
 #include "ppm.hpp"
@@ -39,7 +40,8 @@ int main(int argc, char **argv)
     enum Input_Mode {
         IN_NONE,
         IN_HGR,
-        IN_LGR
+        IN_LGR,
+        IN_DHGR
     } input_mode = IN_NONE;
     enum Output_Mode {
         OUT_NONE,
@@ -49,6 +51,7 @@ int main(int argc, char **argv)
 
     static struct option long_options[] = {
         {"hgr", no_argument, 0, 'h'},
+        {"dhgr", no_argument, 0, 'd'},
         {"lgr", no_argument, 0, 'l'},
         {"ppm", no_argument, 0, 'p'},
         {"pgm", no_argument, 0, 'g'},
@@ -68,6 +71,9 @@ int main(int argc, char **argv)
                 break;
             case 'h':
                 input_mode = IN_HGR;
+                break;
+            case 'd':
+                input_mode = IN_DHGR;
                 break;
             default:
                 fprintf(stderr, "Usage: %s [--hgr | --lgr | --ppm | --pgm] <input_file>\n", argv[0]);
@@ -107,6 +113,10 @@ int main(int argc, char **argv)
             
             // Process the image
             graymap = hiresToGray(hiresData);
+        } else if (input_mode == IN_DHGR) {
+            uint8_t *hiresData = readdHiresFile(filename);
+            printf("Successfully loaded dh-res image: %s\n", filename);
+            graymap = dhiresToGray(hiresData);
         }
 
         if (output_mode == OUT_PGM) {   

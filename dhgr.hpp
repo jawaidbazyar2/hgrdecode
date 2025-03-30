@@ -16,14 +16,11 @@
  */
 
 #pragma once
-
-#include "types.hpp"
 #include <vector>
-#include <cstdio>
-#include <stdexcept>
-#include "hgr.hpp"
+#include <cstdint>
+#include "types.hpp"
+#define CHAR_NUM 256
+#define CHAR_WIDTH 16
+#define CELL_WIDTH 14
 
-uint8_t *readHiresFile(const char* filename);
-uint8_t *readdHiresFile(const char* filename);
-uint8_t *readLoresFile(const char* filename);
-char *rewriteExtension(const char *filename, const char *newExtension);
+uint8_t *dhiresToGray(uint8_t *hiresData);

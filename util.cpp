@@ -24,6 +24,39 @@
 
 #include "hgr.hpp"
 
+
+/**
+ * @brief Loads an Apple II hi-res image file into a vector
+ * 
+ * @param filename Path to the Apple II hi-res image file
+ * @return std::vector<uint8_t> Vector containing the 8,192 bytes of image data
+ * @throws std::runtime_error if file cannot be opened or read
+ */
+uint8_t *readdHiresFile(const char* filename) {
+    // Apple II hi-res images are exactly 8,192 bytes
+    const size_t HIRES_SIZE = 16384;
+    
+    // Pre-allocate the vector to the exact size
+    uint8_t *imageData = new uint8_t[HIRES_SIZE];
+    
+    // Open the file in binary mode
+    FILE* file = fopen(filename, "rb");
+    if (!file) {
+        throw std::runtime_error("Could not open file");
+    }
+    
+    // Read the entire file into the vector
+    size_t bytesRead = fread(imageData, 1, HIRES_SIZE, file);
+    fclose(file);
+    
+    // Verify we read the correct amount
+    if (bytesRead != 16384) {
+        throw std::runtime_error("File size incorrect - expected 16,384 bytes");
+    }
+    
+    return imageData;
+}
+
 /**
  * @brief Loads an Apple II hi-res image file into a vector
  * 
