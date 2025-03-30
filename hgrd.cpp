@@ -128,6 +128,9 @@ int main(int argc, char **argv)
         } else if (output_mode == OUT_PPM) {
 
             setupConfig();
+            if (input_mode == IN_DHGR) {
+                config.phaseInfo[0] = 0.25f; // adjust phase because DHGR lines start at an odd offset compared to standard HGR.
+            }
             RGBA *outputImage = new RGBA[config.width * config.height];
 
             // read nanosecond time

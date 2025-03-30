@@ -124,7 +124,6 @@ std::vector<uint8_t> generateHiresData(const std::vector<uint8_t>& hiresBytes) {
 size_t generatedHiresScanline(uint8_t *hiresData, int startOffset, 
                            uint8_t *output, size_t outputOffset) {
     size_t index = outputOffset;
-    index+=1; // TODO: this is a dirty hack to alter the phase 90 degrees. Something's not right here though.
 
     // Process 40 bytes (one scanline)
     for (int x = 0; x < 40; x++) {
