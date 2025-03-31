@@ -207,11 +207,10 @@ void processAppleIIFrame(
 
         // saturation should be 0 to 1.0 
         // 0 is basically monochrome. transposing row/col here does not matter.
-        float videoSaturation = 1.0f;
         Matrix3x3 saturationMatrix(
             1, 0,               0,
-            0, videoSaturation, 0,
-            0, 0,                videoSaturation
+            0, config.saturation, 0,
+            0, 0,                config.saturation
         );
         // if hue is 0, then hueMatrix becomes identity matrix. (transposing r
         float videoHue = 2 * (float) M_PI * 0.05f;
@@ -235,7 +234,7 @@ void processAppleIIFrame(
     }
 }
 
-void setupConfig() {
+void setupConfig(float saturation) {
     // TODO: analyze and document - in apple ii land the colorburst is defined as negative 33 degrees,
     // But that shifts the colorburst the wrong way. We needed to bring it counterclockwise around the 
     // colorwheel.
@@ -270,5 +269,6 @@ void setupConfig() {
         .decoderOffset = {0.0f, 0.0f, 0.0f} // TODO: first value should brightness. -1 to +1.
     };
     generatePhaseInfo(/* scanlineY */ 0, colorBurst);
+    config.saturation = saturation;
 }
 

@@ -32,6 +32,7 @@ struct ntsc_config {
     float decoderOffset[3]; // TODO: first value should brightness. -1 to +1.
     Matrix3x3 decoderMatrix;
     float phaseInfo[2];
+    float saturation = 1.0f;
 };
 
 #define FRAME_WIDTH 560
@@ -44,7 +45,7 @@ const float NTSC_4FSC = 4 * NTSC_FSC;
 
 extern ntsc_config config ;
 
-void setupConfig();
+void setupConfig(float saturation);
 void processAppleIIFrame(
     uint8_t *frameData,  // 560x192 bytes
     RGBA *outputImage        // Will be filled with 560x192 RGBA pixels

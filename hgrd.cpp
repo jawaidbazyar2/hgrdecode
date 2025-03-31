@@ -58,7 +58,10 @@ int main(int argc, char **argv)
         {0, 0, 0, 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "hlpg", long_options, NULL)) != -1) {
+    // default renderer settings
+    float saturation = 1.0f;
+
+    while ((opt = getopt_long(argc, argv, "hlpgs:", long_options, NULL)) != -1) {
         switch (opt) {
             case 'p':
                 output_mode = OUT_PPM;
@@ -75,8 +78,17 @@ int main(int argc, char **argv)
             case 'd':
                 input_mode = IN_DHGR;
                 break;
+            case 's': {
+                float value = atof(optarg);
+                if (value < 0.0f || value > 1.0f) {
+                    fprintf(stderr, "Saturation must be between 0.0 and 1.0\n");
+                    exit(1);
+                }
+                saturation = value;
+                break;
+            }
             default:
-                fprintf(stderr, "Usage: %s [--hgr | --lgr | --ppm | --pgm] <input_file>\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-s <saturation>] [--hgr | --lgr | --ppm | --pgm] <input_file>\n", argv[0]);
                 exit(1);
         }
     }
@@ -127,7 +139,7 @@ int main(int argc, char **argv)
             writeImageToPGM(graymap, pgmFilename);            
         } else if (output_mode == OUT_PPM) {
 
-            setupConfig();
+            setupConfig(saturation);
             if (input_mode == IN_DHGR) {
                 config.phaseInfo[0] = 0.25f; // adjust phase because DHGR lines start at an odd offset compared to standard HGR.
             }
