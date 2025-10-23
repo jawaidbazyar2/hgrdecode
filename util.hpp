@@ -22,8 +22,10 @@
 #include <cstdio>
 #include <stdexcept>
 #include "hgr.hpp"
+#include "shr.hpp"
 
 uint8_t *readHiresFile(const char* filename);
 uint8_t *readdHiresFile(const char* filename);
 uint8_t *readLoresFile(const char* filename);
 char *rewriteExtension(const char *filename, const char *newExtension);
+SHR *readSHRFile(const char* filename);

@@ -23,7 +23,7 @@
 #include <cstring>
 
 #include "hgr.hpp"
-
+#include "shr.hpp"
 
 /**
  * @brief Loads an Apple II hi-res image file into a vector
@@ -135,4 +135,28 @@ char *rewriteExtension(const char *filename, const char *newExtension) {
         strncat(newfilename, newExtension, 255 - strlen(newfilename));
     }
     return newfilename;
+}
+
+SHR *readSHRFile(const char* filename) {
+    // SHR images are 32K bytes plus 256 mode bytes plus 512 palette bytes - exactly 32768
+    const size_t SHR_SIZE = 32768;
+    
+    // Pre-allocate the vector to the exact size
+    SHR *imageData = new SHR;
+    
+    // Open the file in binary mode
+    FILE* file = fopen(filename, "rb");
+    if (!file) {
+        throw std::runtime_error("Could not open file");
+    }
+
+    // Read the entire file into the vector
+    size_t bytesRead = fread(imageData, 1, SHR_SIZE, file);
+    fclose(file);
+    
+    // Verify we read the correct amount
+    if (bytesRead != SHR_SIZE) {
+        throw std::runtime_error("File size incorrect - expected 32,768 bytes");
+    }
+    return imageData;
 }

@@ -31,6 +31,7 @@
 #include "font.hpp"
 #include "util.hpp"
 #include "ntsc.hpp"
+#include "shr.hpp"
 
 int main(int argc, char **argv)
 {
@@ -41,7 +42,8 @@ int main(int argc, char **argv)
         IN_NONE,
         IN_HGR,
         IN_LGR,
-        IN_DHGR
+        IN_DHGR,
+        IN_SHR
     } input_mode = IN_NONE;
     enum Output_Mode {
         OUT_NONE,
@@ -55,6 +57,7 @@ int main(int argc, char **argv)
         {"lgr", no_argument, 0, 'l'},
         {"ppm", no_argument, 0, 'p'},
         {"pgm", no_argument, 0, 'g'},
+        {"shr", no_argument, 0, 'r'},
         {0, 0, 0, 0}
     };
 
@@ -87,14 +90,17 @@ int main(int argc, char **argv)
                 saturation = value;
                 break;
             }
+            case 'r': 
+                input_mode = IN_SHR;
+                break;
             default:
-                fprintf(stderr, "Usage: %s [-s <saturation>] [--hgr | --lgr | --ppm | --pgm] <input_file>\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-s <saturation>] [--hgr | --lgr | --shr | --ppm | --pgm] <input_file>\n", argv[0]);
                 exit(1);
         }
     }
 
     if (input_mode == IN_NONE) {
-        fprintf(stderr, "Must specify either --hgr or --lgr\n");
+        fprintf(stderr, "Must specify --hgr, --lgr, or --shr\n");
         exit(1);
     }
     if (output_mode == OUT_NONE) {
@@ -129,6 +135,17 @@ int main(int argc, char **argv)
             uint8_t *hiresData = readdHiresFile(filename);
             printf("Successfully loaded dh-res image: %s\n", filename);
             graymap = dhiresToGray(hiresData);
+        } else if (input_mode == IN_SHR) {
+            SHR *shrData = readSHRFile(filename);
+            printf("Successfully loaded shr image: %s\n", filename);
+            RGBA *ppmData = new RGBA[640*200];
+            shrToPpm(shrData, ppmData);
+            
+            // Generate output filenames by replacing or adding extensions
+            char *ppmFilename = rewriteExtension(filename, ".ppm");
+
+            writePPMFile(ppmFilename, (RGBA *)ppmData, 640, 200 );
+            exit(0);
         }
 
         if (output_mode == OUT_PGM) {   
